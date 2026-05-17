@@ -1,0 +1,32 @@
+# Virtual Environment - NEVER push this
+venv/
+env/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment variables - NEVER push this
+.env
+.env.local
+
+# Uploads
+app/static/uploads/
+
+# Database
+*.db
+*.sqlite
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# PyTorch and ML models (too large)
+*.dll
+*.so
+*.pth
+*.bin
+*.pt

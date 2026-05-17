@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberGuard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fafafa; color: #262626; }
+        .navbar {
+            position: fixed; top: 0; width: 100%; background: white;
+            border-bottom: 1px solid #dbdbdb; z-index: 1000;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 20%; height: 60px;
+        }
+        .navbar .logo { font-size: 24px; font-weight: bold; font-family: 'Georgia', serif; color: #262626; text-decoration: none; }
+        .navbar .nav-icons a { color: #262626; margin-left: 20px; font-size: 22px; text-decoration: none; }
+        .navbar .nav-icons a:hover { color: #0095f6; }
+        .main-content { margin-top: 70px; }
+        .flash-messages { position: fixed; top: 70px; right: 20px; z-index: 9999; }
+        .flash { background: #ff4444; color: white; padding: 10px 20px; border-radius: 8px; margin-bottom: 5px; }
+        .flash.success { background: #00c851; }
+        .notif-badge {
+            position: absolute; top: -5px; right: -5px;
+            background: red; color: white; border-radius: 50%;
+            width: 16px; height: 16px; font-size: 10px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .nav-icon-wrap { position: relative; display: inline-block; }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <a href="/feed" class="logo">CyberGuard</a>
+    <div style="flex:1; max-width:250px; margin: 0 20px;">
+        <input type="text" placeholder="Search users..." id="searchInput"
+            style="width:100%; padding:8px 15px; border:1px solid #dbdbdb;
+            border-radius:20px; background:#fafafa; font-size:14px;">
+    </div>
+    <div class="nav-icons">
+        <a href="/feed"><i class="fas fa-home"></i></a>
+        <a href="#" id="dmBtn"><i class="fas fa-paper-plane"></i></a>
+        <span class="nav-icon-wrap">
+            <a href="#" id="notifBtn"><i class="fas fa-heart"></i></a>
+            <span class="notif-badge" id="notifCount" style="display:none">0</span>
+        </span>
+        <a href="/profile/{{ current_user.username if current_user.is_authenticated else '' }}">
+            <i class="fas fa-user-circle"></i>
+        </a>
+        <a href="/logout"><i class="fas fa-sign-out-alt"></i></a>
+    </div>
+</nav>
+
+<div class="flash-messages">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for msg in messages %}
+        <div class="flash">{{ msg }}</div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+</div>
+
+<div class="main-content">
+    {% block content %}{% endblock %}
+</div>
+
+<script>
+// Auto hide flash messages
+setTimeout(() => {
+    document.querySelectorAll('.flash').forEach(f => f.style.display = 'none');
+}, 3000);
+
+// Load notification count
+fetch('/notifications/count')
+    .then(r => r.json())
+    .then(data => {
+        if(data.count > 0) {
+            document.getElementById('notifCount').style.display = 'flex';
+            document.getElementById('notifCount').textContent = data.count;
+        }
+    }).catch(() => {});
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

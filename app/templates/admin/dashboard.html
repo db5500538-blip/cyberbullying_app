@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ethoria Admin Panel</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background:#f0f2f5; }
+        .sidebar { position:fixed; left:0; top:0; width:240px; height:100vh; background:#1a1a2e; color:white; padding:20px; }
+        .sidebar .logo { font-size:22px; font-weight:bold; margin-bottom:30px; color:#e94560; }
+        .sidebar a { display:block; color:#a8a8b3; text-decoration:none; padding:10px; border-radius:5px; margin-bottom:5px; font-size:14px; }
+        .sidebar a:hover, .sidebar a.active { background:#16213e; color:white; }
+        .main { margin-left:240px; padding:25px; }
+        .header { background:white; padding:15px 25px; border-radius:10px; margin-bottom:25px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+        .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:15px; margin-bottom:25px; }
+        .stat-card { background:white; padding:20px; border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+        .stat-card .number { font-size:28px; font-weight:bold; }
+        .stat-card .label { color:#8e8e8e; font-size:13px; }
+        .stat-card.red .number { color:#e94560; }
+        .stat-card.blue .number { color:#0095f6; }
+        .stat-card.green .number { color:#00c851; }
+        .stat-card.orange .number { color:#ff8800; }
+        .card { background:white; border-radius:10px; padding:20px; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-bottom:20px; }
+        .card h3 { margin-bottom:15px; font-size:16px; color:#262626; }
+        table { width:100%; border-collapse:collapse; font-size:14px; }
+        th { text-align:left; padding:10px; border-bottom:2px solid #f0f2f5; color:#8e8e8e; font-weight:600; }
+        td { padding:10px; border-bottom:1px solid #f0f2f5; }
+        tr:hover { background:#fafafa; }
+        .badge { padding:3px 10px; border-radius:20px; font-size:12px; font-weight:bold; }
+        .badge.high { background:#ffe0e0; color:#e94560; }
+        .badge.medium { background:#fff3cd; color:#ff8800; }
+        .badge.safe { background:#d4edda; color:#00c851; }
+        .btn { padding:6px 14px; border:none; border-radius:5px; cursor:pointer; font-size:13px; font-weight:bold; text-decoration:none; display:inline-block; margin:2px; }
+        .btn-warn { background:#fff3cd; color:#ff8800; }
+        .btn-suspend { background:#ffe0e0; color:#e94560; }
+        .btn-delete { background:#e94560; color:white; }
+        .btn-review { background:#d4edda; color:#00c851; }
+    </style>
+</head>
+<body>
+<div class="sidebar">
+    <div class="logo"><i class="fas fa-shield-alt"></i> Ethoria</div>
+    <a href="/ethoria/dashboard" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+    <a href="/feed"><i class="fas fa-globe"></i> View Site</a>
+    <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+</div>
+
+<div class="main">
+    <div class="header">
+        <h2>Admin Dashboard</h2>
+        <span style="color:#8e8e8e; font-size:14px;">Welcome, Ethoria 👋</span>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+        <div class="stat-card red">
+            <div class="number">{{ reports|length }}</div>
+            <div class="label">Pending Reports</div>
+        </div>
+        <div class="stat-card blue">
+            <div class="number">{{ users|length }}</div>
+            <div class="label">Total Users</div>
+        </div>
+        <div class="stat-card orange">
+            <div class="number">{{ users|selectattr('report_count', 'ge', 1)|list|length }}</div>
+            <div class="label">Flagged Users</div>
+        </div>
+        <div class="stat-card green">
+            <div class="number">{{ users|selectattr('is_suspended', 'equalto', true)|list|length }}</div>
+            <div class="label">Suspended Users</div>
+        </div>
+    </div>
+
+    <!-- Reports Table -->
+    <div class="card">
+        <h3><i class="fas fa-flag" style="color:#e94560;"></i> Pending Reports</h3>
+        {% if reports %}
+        <table>
+            <tr>
+                <th>Reported User</th>
+                <th>Type</th>
+                <th>Severity</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+            {% for report in reports %}
+            <tr>
+                <td><strong>{{ report.reported_user.username }}</strong></td>
+                <td>{{ report.content_type }}</td>
+                <td><span class="badge {{ report.severity }}">{{ report.severity|upper }}</span></td>
+                <td>{{ report.created_at.strftime('%d %b %Y') }}</td>
+                <td>
+                    <a href="/ethoria/action/{{ report.reported_user_id }}/warn" class="btn btn-warn">⚠️ Warn</a>
+                    <a href="/ethoria/action/{{ report.reported_user_id }}/suspend" class="btn btn-suspend">🔒 Suspend</a>
+                    <a href="/ethoria/action/{{ report.reported_user_id }}/delete" class="btn btn-delete"
+                        onclick="return confirm('Delete this user?')">🗑️ Delete</a>
+                    <a href="/ethoria/review/{{ report.id }}" class="btn btn-review">✅ Reviewed</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p style="color:#8e8e8e; text-align:center; padding:30px;">✅ No pending reports!</p>
+        {% endif %}
+    </div>
+
+    <!-- Users Table -->
+    <div class="card">
+        <h3><i class="fas fa-users" style="color:#0095f6;"></i> All Users</h3>
+        <table>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Reports</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+            {% for user in users %}
+            <tr style="{% if user.report_count >= 5 %}background:#fff5f5;{% endif %}">
+                <td>
+                    <strong {% if user.report_count >= 5 %}style="color:red;"{% endif %}>
+                        {{ user.username }}
+                    </strong>
+                    {% if user.report_count >= 5 %}
+                    <span class="badge high">REPORTED</span>
+                    {% endif %}
+                </td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.report_count }}</td>
+                <td>
+                    {% if user.is_suspended %}
+                    <span class="badge high">Suspended</span>
+                    {% else %}
+                    <span class="badge safe">Active</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="/ethoria/action/{{ user.id }}/warn" class="btn btn-warn">⚠️ Warn</a>
+                    <a href="/ethoria/action/{{ user.id }}/suspend" class="btn btn-suspend">🔒 Suspend</a>
+                    <a href="/ethoria/action/{{ user.id }}/delete" class="btn btn-delete"
+                        onclick="return confirm('Delete this user?')">🗑️ Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+</body>
+</html>
