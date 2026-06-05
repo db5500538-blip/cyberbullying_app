@@ -16,7 +16,7 @@ def register_page():
 
 @pages.route("/home.html")
 def home_page():
-    return render_template("feed.html")
+    return render_template("home.html")
 
 @pages.route("/profile.html")
 def profile_page():
