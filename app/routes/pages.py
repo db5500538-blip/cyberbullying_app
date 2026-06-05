@@ -16,7 +16,7 @@ def register_page():
 
 @pages.route("/home.html")
 def home_page():
-    return render_template("home.html")
+    return render_template("feed.html")
 
 @pages.route("/profile.html")
 def profile_page():
@@ -25,3 +25,11 @@ def profile_page():
 @pages.route("/explore.html")
 def explore_page():
     return render_template("explore.html")
+
+@pages.route("/messages.html")
+def messages_page():
+    return render_template("messages.html")
+
+@pages.route("/notifications.html")
+def notifications_page():
+    return render_template("notifications.html")

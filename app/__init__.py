@@ -3,7 +3,10 @@ from flask_pymongo import PyMongo
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
-from config import Config
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 mongo = PyMongo()
 bcrypt = Bcrypt()
@@ -11,7 +14,13 @@ jwt = JWTManager()
 
 def create_app():
     app = Flask(__name__, template_folder="templates", static_folder="static")
-    app.config.from_object(Config)
+
+    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret")
+    app.config["MONGO_URI"] = os.getenv("MONGO_URI", "")
+    app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "jwt-secret")
+    app.config["JWT_TOKEN_LOCATION"] = ["headers", "cookies"]
+    app.config["JWT_COOKIE_CSRF_PROTECT"] = False
+    app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
 
     CORS(app, supports_credentials=True)
     mongo.init_app(app)
@@ -24,7 +33,7 @@ def create_app():
         from .routes.users import users
         # from .routes.messages import messages
         # from .routes.admin import admin
-        from .routes.pages import pages   # ← new file you'll add in Step 9
+        from .routes.pages import pages
 
         app.register_blueprint(auth, url_prefix="/api/auth")
         app.register_blueprint(posts, url_prefix="/api/posts")
