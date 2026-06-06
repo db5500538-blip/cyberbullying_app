@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Ethoria · Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d0d14;--card:#13131e;--border:#1c1c2e;--purple:#7c3aed;--purple-light:#a855f7;--text:#e2e8f0;--muted:#64748b;--danger:#ef4444;--success:#22c55e;--nav-h:60px;}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh}
+nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:rgba(13,13,20,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100}
+.nav-logo{font-size:1.3rem;font-weight:700;letter-spacing:3px;background:linear-gradient(135deg,var(--purple-light),#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.content{max-width:900px;margin:0 auto;padding:calc(var(--nav-h)+32px) 16px 40px}
+h2{font-size:1.3rem;font-weight:700;margin-bottom:24px}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px}
+.stat-card .num{font-size:1.8rem;font-weight:700;background:linear-gradient(135deg,var(--purple-light),#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-card .lbl{font-size:.8rem;color:var(--muted);margin-top:4px}
+.section{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:24px;overflow:hidden}
+.section-header{padding:16px 20px;border-bottom:1px solid var(--border);font-weight:600;font-size:.95rem;display:flex;align-items:center;justify-content:space-between}
+table{width:100%;border-collapse:collapse}
+th{padding:10px 16px;text-align:left;font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
+td{padding:12px 16px;font-size:.85rem;border-bottom:1px solid rgba(28,28,46,.5)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(124,58,237,.04)}
+.badge{padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:600}
+.badge.admin{background:rgba(124,58,237,.2);color:var(--purple-light)}
+.badge.user{background:rgba(100,116,139,.15);color:var(--muted)}
+.badge.blocked{background:rgba(239,68,68,.15);color:var(--danger)}
+.badge.active{background:rgba(34,197,94,.15);color:var(--success)}
+.action-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);padding:4px 10px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:.75rem;transition:all .2s}
+.action-btn.danger{border-color:var(--danger);color:var(--danger)}
+.action-btn.danger:hover{background:var(--danger);color:#fff}
+.action-btn.success{border-color:var(--success);color:var(--success)}
+.action-btn.success:hover{background:var(--success);color:#fff}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1e1e2e;border:1px solid var(--border);border-radius:10px;padding:12px 20px;font-size:.85rem;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}.toast.success{border-color:var(--success);color:var(--success)}.toast.error{border-color:var(--danger);color:var(--danger)}
+@media(max-width:600px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-logo">ETHORIA ADMIN</div>
+  <button style="background:none;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 14px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:.85rem" onclick="location.href='/home.html'">← Back to App</button>
+</nav>
+
+<div class="content">
+  <h2>Admin Dashboard</h2>
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card"><div class="num" id="totalUsers">—</div><div class="lbl">Total Users</div></div>
+    <div class="stat-card"><div class="num" id="totalPosts">—</div><div class="lbl">Total Posts</div></div>
+    <div class="stat-card"><div class="num" id="blockedPosts">—</div><div class="lbl">Blocked Posts</div></div>
+    <div class="stat-card"><div class="num" id="totalMessages">—</div><div class="lbl">Messages Sent</div></div>
+  </div>
+
+  <!-- USERS TABLE -->
+  <div class="section">
+    <div class="section-header">
+      <span>All Users</span>
+      <input style="background:#0a0a12;border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);font-family:'Outfit',sans-serif;font-size:.8rem;outline:none" placeholder="Search users..." oninput="filterUsers(this.value)"/>
+    </div>
+    <table>
+      <thead><tr><th>User</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="usersTable"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">Loading...</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- REPORTED POSTS -->
+  <div class="section">
+    <div class="section-header">Flagged / Blocked Posts</div>
+    <table>
+      <thead><tr><th>Author</th><th>Caption</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="postsTable"><tr><td colspan="4" style="text-align:center;color:var(--muted);padding:30px">Loading...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let allUsers = [];
+function getToken(){return localStorage.getItem('token');}
+function authHeaders(){return {'Content-Type':'application/json','Authorization':`Bearer ${getToken()}`};}
+
+async function init(){
+  if(!getToken()){location.href='/login.html';return;}
+  const r = await fetch('/api/auth/me',{headers:authHeaders(),credentials:'include'});
+  if(!r.ok){location.href='/login.html';return;}
+  const me = await r.json();
+  if(me.role !== 'admin'){
+    document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#ef4444;font-family:Outfit,sans-serif;font-size:1.1rem">Access Denied — Admins Only</div>';
+    return;
+  }
+  loadStats();
+  loadUsers();
+  loadPosts();
+}
+
+async function loadStats(){
+  const r = await fetch('/api/admin/stats',{headers:authHeaders(),credentials:'include'});
+  if(!r.ok) return;
+  const d = await r.json();
+  document.getElementById('totalUsers').textContent = d.users;
+  document.getElementById('totalPosts').textContent = d.posts;
+  document.getElementById('blockedPosts').textContent = d.blocked_posts;
+  document.getElementById('totalMessages').textContent = d.messages;
+}
+
+async function loadUsers(){
+  const r = await fetch('/api/admin/users',{headers:authHeaders(),credentials:'include'});
+  if(!r.ok) return;
+  allUsers = await r.json();
+  renderUsers(allUsers);
+}
+
+function renderUsers(users){
+  const tb = document.getElementById('usersTable');
+  if(!users.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px">No users found</td></tr>';return;}
+  tb.innerHTML = users.map(u => `
+    <tr>
+      <td><strong>${u.username}</strong></td>
+      <td style="color:var(--muted)">${u.email}</td>
+      <td><span class="badge ${u.role}">${u.role}</span></td>
+      <td><span class="badge ${u.banned?'blocked':'active'}">${u.banned?'Banned':'Active'}</span></td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap">
+        ${u.role!=='admin'?`<button class="action-btn" onclick="makeAdmin('${u._id}')">Make Admin</button>`:''}
+        <button class="action-btn danger" onclick="banUser('${u._id}','${u.username}',${!u.banned})">${u.banned?'Unban':'Ban'}</button>
+        <button class="action-btn danger" onclick="deleteUser('${u._id}','${u.username}')">Delete</button>
+      </td>
+    </tr>`).join('');
+}
+
+function filterUsers(q){
+  renderUsers(allUsers.filter(u => u.username.toLowerCase().includes(q.toLowerCase()) || u.email.toLowerCase().includes(q.toLowerCase())));
+}
+
+async function loadPosts(){
+  const r = await fetch('/api/admin/posts',{headers:authHeaders(),credentials:'include'});
+  if(!r.ok) return;
+  const posts = await r.json();
+  const tb = document.getElementById('postsTable');
+  if(!posts.length){tb.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px">No flagged posts</td></tr>';return;}
+  tb.innerHTML = posts.map(p => `
+    <tr>
+      <td><strong>${p.author}</strong></td>
+      <td style="color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.caption || '(image only)'}</td>
+      <td><span class="badge ${p.blocked?'blocked':'active'}">${p.blocked?'Blocked':'Active'}</span></td>
+      <td style="display:flex;gap:6px">
+        <button class="action-btn ${p.blocked?'success':'danger'}" onclick="toggleBlockPost('${p._id}',${!p.blocked})">${p.blocked?'Unblock':'Block'}</button>
+        <button class="action-btn danger" onclick="deletePost('${p._id}')">Delete</button>
+      </td>
+    </tr>`).join('');
+}
+
+async function banUser(uid, username, ban){
+  const r = await fetch(`/api/admin/users/${uid}/ban`,{method:'POST',headers:authHeaders(),credentials:'include',body:JSON.stringify({ban})});
+  if(r.ok){showToast(`${username} ${ban?'banned':'unbanned'}!`,'success');loadUsers();}
+  else showToast('Failed','error');
+}
+
+async function deleteUser(uid, username){
+  if(!confirm(`Delete user "${username}"? This cannot be undone.`)) return;
+  const r = await fetch(`/api/admin/users/${uid}`,{method:'DELETE',headers:authHeaders(),credentials:'include'});
+  if(r.ok){showToast('User deleted','success');loadUsers();loadStats();}
+  else showToast('Failed','error');
+}
+
+async function makeAdmin(uid){
+  const r = await fetch(`/api/admin/users/${uid}/make-admin`,{method:'POST',headers:authHeaders(),credentials:'include'});
+  if(r.ok){showToast('Made admin!','success');loadUsers();}
+  else showToast('Failed','error');
+}
+
+async function toggleBlockPost(postId, block){
+  const r = await fetch(`/api/admin/posts/${postId}/block`,{method:'POST',headers:authHeaders(),credentials:'include',body:JSON.stringify({block})});
+  if(r.ok){showToast(block?'Post blocked':'Post unblocked','success');loadPosts();}
+  else showToast('Failed','error');
+}
+
+async function deletePost(postId){
+  if(!confirm('Delete this post?')) return;
+  const r = await fetch(`/api/admin/posts/${postId}`,{method:'DELETE',headers:authHeaders(),credentials:'include'});
+  if(r.ok){showToast('Post deleted','success');loadPosts();loadStats();}
+  else showToast('Failed','error');
+}
+
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show'+(type?' '+type:'');
+  setTimeout(()=>t.className='toast',2500);
+}
+
+init();
+</script>
+</body>
+</html>

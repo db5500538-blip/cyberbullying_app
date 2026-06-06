@@ -5,6 +5,9 @@ from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from dotenv import load_dotenv
 import os
+from .routes.messages import messages
+from .routes.admin import admin
+
 
 load_dotenv()
 
@@ -38,8 +41,8 @@ def create_app():
         app.register_blueprint(auth, url_prefix="/api/auth")
         app.register_blueprint(posts, url_prefix="/api/posts")
         app.register_blueprint(users, url_prefix="/api/users")
-        # app.register_blueprint(messages, url_prefix="/api/messages")
-        # app.register_blueprint(admin, url_prefix="/api/admin")
+        app.register_blueprint(messages, url_prefix="/api/messages")
+        app.register_blueprint(admin, url_prefix="/api/admin")
         app.register_blueprint(pages)
 
     return app

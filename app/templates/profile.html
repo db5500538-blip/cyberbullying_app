@@ -87,7 +87,7 @@ async function loadProfile(){
 
   const actions = document.getElementById('profileActions');
   if(user._id === currentUser._id){
-    actions.innerHTML = `<button class="btn-outline" onclick="location.href='/home.html'">Edit Profile</button>`;
+    actions.innerHTML = `<button class="btn-outline" onclick="location.href='/edit-profile.html'">Edit Profile</button>`;
   } else {
     actions.innerHTML = `<button class="btn-primary" id="followBtn" onclick="followUser('${user._id}')">${user.is_following?'Following':'Follow'}</button>`;
   }

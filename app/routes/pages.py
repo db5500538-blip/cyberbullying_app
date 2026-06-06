@@ -33,3 +33,11 @@ def messages_page():
 @pages.route("/notifications.html")
 def notifications_page():
     return render_template("notifications.html")
+
+@pages.route("/edit-profile.html")
+def edit_profile_page():
+    return render_template("edit_profile.html")
+
+@pages.route("/admin.html")
+def admin_page():
+    return render_template("admin.html")

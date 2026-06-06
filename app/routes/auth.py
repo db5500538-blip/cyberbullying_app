@@ -104,3 +104,40 @@ def me():
         return jsonify(user_to_dict(user)), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@auth.route("/update-profile", methods=["PUT"])
+@jwt_required()
+def update_profile():
+    try:
+        uid = get_jwt_identity()
+        data = request.get_json()
+        username = data.get("username", "").strip()
+        bio = data.get("bio", "").strip()
+        email = data.get("email", "").strip().lower()
+        is_private = data.get("is_private", False)
+        avatar_b64 = data.get("avatar_b64", "")
+
+        # Check username not taken by someone else
+        existing = mongo.db.users.find_one({"username": username, "_id": {"$ne": ObjectId(uid)}})
+        if existing:
+            return jsonify({"error": "Username already taken"}), 409
+
+        update = {"username": username, "bio": bio, "email": email, "is_private": is_private}
+
+        # Save avatar if provided
+        if avatar_b64:
+            import base64, uuid, os
+            UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "..", "static", "uploads")
+            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+            header, encoded = avatar_b64.split(",", 1) if "," in avatar_b64 else ("", avatar_b64)
+            ext = "png" if "png" in header else "jpg"
+            filename = f"avatar_{uuid.uuid4().hex}.{ext}"
+            with open(os.path.join(UPLOAD_FOLDER, filename), "wb") as f:
+                f.write(base64.b64decode(encoded))
+            update["avatar"] = f"/static/uploads/{filename}"
+
+        mongo.db.users.update_one({"_id": ObjectId(uid)}, {"$set": update})
+        user = mongo.db.users.find_one({"_id": ObjectId(uid)})
+        return jsonify(user_to_dict(user)), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
