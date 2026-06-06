@@ -33,4 +33,4 @@ def create_app():
         app.register_blueprint(messages, url_prefix="/api/messages")
         app.register_blueprint(admin, url_prefix="/api/admin")
 
-    return apps
+    return app
