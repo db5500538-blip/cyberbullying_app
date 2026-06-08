@@ -3,7 +3,11 @@ BLOCK_KEYWORDS = [
     "you should die", "i will kill you", "go kill yourself",
     "nobody likes you", "i hate you", "get lost",
     "go to hell", "drop dead", "die already",
-    "you are worthless", "you deserve to die",
+    "you are worthless", "you deserve to die","idiot", "stupid", "dumb", "hate you", "kill yourself", "kys",
+    "ugly", "loser", "worthless", "shut up", "moron", "retard",
+    "die", "go die", "trash", "garbage", "disgusting", "pathetic",
+    "freak", "nobody likes you", "get lost", "go away", "fat",
+    "pig", "cow", "rat", "b*tch", "a**hole", "f**k you", "damn you"
 ]
 
 WARN_KEYWORDS = [

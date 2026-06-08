@@ -85,6 +85,34 @@ def follow_user(user_id):
         })
         return jsonify({"following": True}), 200
 
+@users.route("/<username>/followers", methods=["GET"])
+@jwt_required()
+def get_followers(username):
+    user = mongo.db.users.find_one({"username": username})
+    if not user:
+        return jsonify([]), 404
+    follower_ids = user.get("followers", [])
+    result = []
+    for fid in follower_ids:
+        u = mongo.db.users.find_one({"_id": fid})
+        if u:
+            result.append({"_id": str(u["_id"]), "username": u["username"]})
+    return jsonify(result), 200
+
+@users.route("/<username>/following", methods=["GET"])
+@jwt_required()
+def get_following(username):
+    user = mongo.db.users.find_one({"username": username})
+    if not user:
+        return jsonify([]), 404
+    following_ids = user.get("following", [])
+    result = []
+    for fid in following_ids:
+        u = mongo.db.users.find_one({"_id": fid})
+        if u:
+            result.append({"_id": str(u["_id"]), "username": u["username"]})
+    return jsonify(result), 200
+
 @users.route("/me/update", methods=["PUT"])
 @jwt_required()
 def update_profile():

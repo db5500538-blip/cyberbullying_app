@@ -50,8 +50,8 @@ nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:rgba(13,1
       <div class="profile-username" id="profileUsername">Loading...</div>
       <div class="profile-stats">
         <div class="stat"><div class="stat-num" id="statPosts">0</div><div class="stat-label">posts</div></div>
-        <div class="stat"><div class="stat-num" id="statFollowers">0</div><div class="stat-label">followers</div></div>
-        <div class="stat"><div class="stat-num" id="statFollowing">0</div><div class="stat-label">following</div></div>
+        <div class="stat" style="cursor:pointer" onclick="showFollowList('followers')"><div class="stat-num" id="statFollowers">0</div><div class="stat-label">followers</div></div>
+        <div class="stat" style="cursor:pointer" onclick="showFollowList('following')"><div class="stat-num" id="statFollowing">0</div><div class="stat-label">following</div></div>
       </div>
       <div class="profile-bio" id="profileBio"></div>
       <div class="profile-actions" id="profileActions"></div>
@@ -61,6 +61,16 @@ nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:rgba(13,1
   <div class="posts-grid" id="postsGrid"></div>
 </div>
 <div class="toast" id="toast"></div>
+<!-- FOLLOWERS/FOLLOWING MODAL -->
+<div id="followModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center">
+  <div style="background:#13131e;border:1px solid #1c1c2e;border-radius:20px;padding:24px;width:100%;max-width:360px;position:relative;max-height:80vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h3 id="followModalTitle" style="font-size:1rem;font-weight:600">Followers</h3>
+      <button onclick="closeFollowModal()" style="background:none;border:none;color:#64748b;cursor:pointer;font-size:1.2rem">✕</button>
+    </div>
+    <div id="followModalList"></div>
+  </div>
+</div>
 <script>
 function getToken(){return localStorage.getItem('token');}
 function authHeaders(){return {'Content-Type':'application/json','Authorization':`Bearer ${getToken()}`};}
@@ -118,6 +128,36 @@ function showToast(msg,type=''){
   const t=document.getElementById('toast');
   t.textContent=msg;t.className='toast show'+(type?' '+type:'');
   setTimeout(()=>t.className='toast',2500);
+}
+let profileData = null;
+
+async function showFollowList(type) {
+  const modal = document.getElementById('followModal');
+  const title = document.getElementById('followModalTitle');
+  const list = document.getElementById('followModalList');
+  title.textContent = type === 'followers' ? 'Followers' : 'Following';
+  list.innerHTML = '<div style="text-align:center;color:#64748b;padding:20px">Loading...</div>';
+  modal.style.display = 'flex';
+
+  const r = await fetch(`/api/users/${targetUser}/${type}`, {headers: authHeaders(), credentials: 'include'});
+  const users = await r.json();
+
+  if (!users.length) {
+    list.innerHTML = `<div style="text-align:center;color:#64748b;padding:20px">No ${type} yet</div>`;
+    return;
+  }
+
+  list.innerHTML = users.map(u => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #1c1c2e">
+      <div style="display:flex;align-items:center;gap:10px;cursor:pointer" onclick="location.href='/profile.html?user=${u.username}'">
+        <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#1d4ed8);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.9rem">${u.username[0].toUpperCase()}</div>
+        <div style="font-size:.9rem;font-weight:600">${u.username}</div>
+      </div>
+    </div>`).join('');
+}
+
+function closeFollowModal() {
+  document.getElementById('followModal').style.display = 'none';
 }
 
 loadProfile();

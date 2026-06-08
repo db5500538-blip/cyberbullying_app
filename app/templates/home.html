@@ -188,8 +188,11 @@ nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:rgba(13,1
     </button>
     <button class="nav-icon" id="notifBtn" onclick="toggleNotif()" title="Notifications">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      <span class="badge" id="notifBadge" style="display:none"></span>
+      <span class="badge" id="notifBadge" style="display:none">
     </button>
+    <button class="nav-icon" onclick="location.href='/messages.html'" title="Messages">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </button></span>
     <div class="avatar-btn" onclick="goProfile()" id="navAvatar">
       <img src="" alt="" id="navAvatarImg" onerror="this.style.display='none';this.nextSibling.style.display='flex'" style="display:none"/>
       <div class="avatar-placeholder" id="navAvatarPlaceholder"></div>
